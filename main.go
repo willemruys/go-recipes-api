@@ -2,6 +2,7 @@ package main
 
 import (
 	"example.com/m/controllers"
+	"example.com/m/middleware"
 	"example.com/m/models"
 	"github.com/gin-gonic/gin"
 )
@@ -25,6 +26,8 @@ func main() {
 
 	r.GET("/user/:id", controllers.GetUser)
 	r.POST("/user", controllers.CreateUser)
+	r.PATCH("/user/personal-details/:id",middleware.SetMiddlewareAuthentication(), controllers.UpdateUserPersonalDetails)
+	r.PATCH("/user/password/:id", middleware.SetMiddlewareAuthentication(), controllers.UpdatePassword, )
 
 	r.POST("/login", controllers.Login)
 

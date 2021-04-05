@@ -5,13 +5,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func SignIn(email, password string) (string, error) {
+func SignIn(user models.User, attempt string) (string, error) {
 
 	var err error
-
-	user := models.User{}
-
-	err = user.VerifyPassword(user.Password, password)
+	err = user.VerifyPassword(user.Password, attempt)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", err
 	}

@@ -1,11 +1,10 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 
 	"example.com/m/auth"
-	"example.com/m/responses"
+	"github.com/gin-gonic/gin"
 )
 
 func SetMiddlewareJSON(next http.HandlerFunc) http.HandlerFunc {
@@ -15,13 +14,14 @@ func SetMiddlewareJSON(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func SetMiddlewareAuthentication(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := auth.TokenValid(r)
+func SetMiddlewareAuthentication() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := auth.TokenValid(c)
 		if err != nil {
-			responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
+			c.JSON(http.StatusUnauthorized, gin.H{"response": "no valid jwt"})
+			c.Abort()
 			return
 		}
-		next(w, r)
+		c.Next()
 	}
 }
