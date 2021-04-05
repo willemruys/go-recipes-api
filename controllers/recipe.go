@@ -12,6 +12,7 @@ func FindRecipes(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var recipes []models.Recipe
 	db.Find(&recipes)
+	
 	c.JSON(http.StatusOK, gin.H{"data": recipes})
 }
 
