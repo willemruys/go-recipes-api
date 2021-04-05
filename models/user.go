@@ -46,7 +46,6 @@ func (u *User) VerifyPassword(hashedPassword, password string) error {
 }
 
 func (u *User) Prepare() {
-	u.ID = 0
 	u.Email = html.EscapeString(strings.TrimSpace(u.Email))
 	u.CreatedAt = time.Now()
 	u.UpdatedAt = time.Now()
