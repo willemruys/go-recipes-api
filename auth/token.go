@@ -49,7 +49,7 @@ func ExtractToken(c *gin.Context) string {
 	return ""
 }
 
-func ExtractTokenID(c *gin.Context) (uint32, error) {
+func ExtractTokenID(c *gin.Context) (uint, error) {
 
 	tokenString := ExtractToken(c)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -67,7 +67,7 @@ func ExtractTokenID(c *gin.Context) (uint32, error) {
 		if err != nil {
 			return 0, err
 		}
-		return uint32(uid), nil
+		return uint(uid), nil
 	}
 	return 0, nil
 }

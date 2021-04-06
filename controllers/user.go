@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"example.com/m/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"recipes-api.com/m/models"
 )
 
 func CreateUser(c *gin.Context) {
@@ -62,13 +62,20 @@ func UpdateUserPersonalDetails(c *gin.Context) {
 
 	var input models.UpdateUser
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusNotAcceptable, gin.H{"response": err.Error()})
+		c.JSON(http.StatusNotAcceptable, gin.H{"response": "missing details"})
 		return
 	}
+
+	if err := input.ValidateEmail(); err != nil {
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
+		return
+	}
+
 
 	user := models.User{}
 
 	emailExists, err := user.EmailExists(db, input.Email)
+
 	if emailExists {
 		c.JSON(http.StatusNotAcceptable, gin.H{"response": "email exists"})
 		return
@@ -77,6 +84,7 @@ func UpdateUserPersonalDetails(c *gin.Context) {
 		c.JSON(http.StatusNotAcceptable, gin.H{"response": err.Error()})
 		return
 	}
+	
 
 	updatedUser, err := user.UpdatePersonalDetails(db, userId, input)
 	if err != nil {
@@ -117,11 +125,34 @@ func GetUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": err})
 		return
 	}
-	user := models.UserReadModel{}
+	user := models.User{}
 	userGotten, err := user.FindUserByID(db, uint32(uid))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"user": userGotten})
+}
+
+func GetUserRecipes(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	uid, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"response": err})
+		return
+	}
+
+	user := models.User{}
+
+	recipes, err := user.UserRecipes(db, uid)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"response": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user, "recipes": recipes})
+
+
 }

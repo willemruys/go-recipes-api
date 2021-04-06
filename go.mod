@@ -1,4 +1,4 @@
-module example.com/m
+module recipes-api.com/m
 
 go 1.16
 

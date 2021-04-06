@@ -8,22 +8,21 @@ import (
 	"strings"
 	"time"
 
-	"example.com/m/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"recipes-api.com/m/utils"
 )
 
 type User struct {
 	gorm.Model
-	ID 			uint32
 	Username 	string 	`gorm:"size:100;not null;unique" json:"username" binding:"required"`
 	Email 		string 	`gorm:"size:100;not null;unique" json:"email" binding:"required"`
-	Password 	string 	`gorm:"size:100;not null" json:"password" binding:"required"`
+	Password 	string 	`gorm:"size:100;not null" json:"-" binding:"required"`
+	Recipes 	[]Recipe `gorm:"constraint:OnUpdate:CASCADE;foreignKey:UserID"`
 }
 
 type UserReadModel struct {
 	gorm.Model
-	ID 			uint32
 	Username 	string 	`gorm:"size:100;not null;unique" json:"username" binding:"required"`
 	Email 		string 	`gorm:"size:100;not null;unique" json:"email" binding:"required"`
 }
@@ -55,6 +54,17 @@ func (u *User) VerifyPassword(hashedPassword, password string) error {
 }
 
 func (u *User) ValidateEmail() (error) {
+
+	emailValid, errMessage := utils.IsEmailValid(u.Email)
+
+	if !emailValid {
+		return errors.New(fmt.Sprintf("Please provide a valid email. Error message: %s", errMessage))
+	}
+
+	return nil
+}
+
+func (u *UpdateUser) ValidateEmail() (error) {
 
 	emailValid, errMessage := utils.IsEmailValid(u.Email)
 
@@ -111,7 +121,7 @@ func (user *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
 
 	var err error
 	users:= []User{}
-	err = db.Debug().Model(&User{}).Limit(100).Find(&users).Error
+	err = db.Debug().Model(&User{}).Find(&users).Error
 
 	if err != nil {
 		return &[]User{}, err
@@ -119,22 +129,17 @@ func (user *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
 	return &users, nil
 }
 
-func (u *UserReadModel) FindUserByID(db *gorm.DB, uid uint32) (*UserReadModel, error) {
-	var err error
-	err = db.Debug().Model(User{}).Where("id = ?", uid).Take(&u).Error
+func (u *User) FindUserByID(db *gorm.DB, uid uint32) (*User, error) {
+
+	err := db.Debug().Where("id = ?", uid).First(&u).Error
 
 	if err != nil {
 		return nil, err
 	}
-
-	user := db.Where("id = ?", uid).Take(&u)
-
-	if user == nil {
-		return nil, errors.New("User Not Found")
-	}
-
-	return u, err
+	
+	return u, nil
 }
+
 
 func (u *User) UpdatePersonalDetails(db *gorm.DB, uid string, input UpdateUser) (*User, error) {
 
@@ -216,4 +221,20 @@ func (user *User) UserNameExists(db *gorm.DB, username string) (bool, error ){
 	}
 
 	return false, nil
+}
+
+func (user *User) UserRecipes(db *gorm.DB, userId uint64) ([]Recipe, error) {
+
+	if err :=  db.Where("id = ?", userId).First(&user).Error; err != nil {
+		return nil, err
+	}
+	
+	var recipes []Recipe
+
+	if err := db.Debug().Model(&user).Association("Recipes").Find(&recipes); err != nil {
+		return nil, err
+	}
+
+	return recipes, nil
+
 }

@@ -1,36 +1,41 @@
 package main
 
 import (
-	"example.com/m/controllers"
-	"example.com/m/middleware"
-	"example.com/m/models"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"recipes-api.com/m/controllers"
+	"recipes-api.com/m/middleware"
+	"recipes-api.com/m/models"
 )
 
 func main() {
-	r := gin.Default()
-
 	db:= models.SetupModels()
 
 	db.AutoMigrate(&models.User{}, &models.Recipe{})
 
-	 r.Use(func(c *gin.Context) {
-		 c.Set("db", db)
-		 c.Next()
+	setupServer(db).Run()
+}
+
+func setupServer(db *gorm.DB) *gin.Engine {
+	r:= gin.Default()
+
+	r.Use(func(c *gin.Context) {
+		c.Set("db", db)
+		c.Next()
  	})
 
-	r.GET("/recipes",controllers.FindRecipes)
-	r.POST("/recipes", controllers.CreateRecipe)
-	r.PATCH("/recipes/:id", controllers.UpdateRecipe)
-	r.DELETE("/recipes/:id", controllers.DeleteRecipe)
+	r.GET("/recipes", controllers.FindRecipes)
+	r.POST("/recipes", middleware.SetMiddlewareAuthentication(), controllers.CreateRecipe)
+	r.PATCH("/recipes/:id", middleware.SetMiddlewareAuthentication(), middleware.RecipeOwnershipAuthorization(), controllers.UpdateRecipe)
+	r.DELETE("/recipes/:id", middleware.SetMiddlewareAuthentication(), controllers.DeleteRecipe)
 
 	r.GET("/user/:id", controllers.GetUser)
+	r.GET("user/:id/recipes", controllers.GetUserRecipes)
 	r.POST("/user", controllers.CreateUser)
-	r.PATCH("/user/personal-details/:id",middleware.SetMiddlewareAuthentication(), controllers.UpdateUserPersonalDetails)
-	r.PATCH("/user/password/:id", middleware.SetMiddlewareAuthentication(), controllers.UpdatePassword, )
+	r.PATCH("/user/personal-details/:id", middleware.SetMiddlewareAuthentication(), middleware.OwnProfileOwnerShip(), controllers.UpdateUserPersonalDetails)
+	r.PATCH("/user/password/:id", middleware.SetMiddlewareAuthentication(),middleware.OwnProfileOwnerShip(), controllers.UpdatePassword, )
 
 	r.POST("/login", controllers.Login)
 
-	r.Run()
-
+	return r
 }

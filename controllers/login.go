@@ -3,10 +3,10 @@ package controllers
 import (
 	"net/http"
 
-	"example.com/m/auth"
-	"example.com/m/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"recipes-api.com/m/auth"
+	"recipes-api.com/m/models"
 )
 
 func Login(c *gin.Context) {
@@ -27,7 +27,7 @@ func Login(c *gin.Context) {
 
 	user.Prepare()
 
-	token, err := auth.SignIn(user, userLoginAttempt.Password)
+	token, err := auth.AssignToken(user, userLoginAttempt.Password)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "failed login"})

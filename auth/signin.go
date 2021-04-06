@@ -1,16 +1,16 @@
 package auth
 
 import (
-	"example.com/m/models"
 	"golang.org/x/crypto/bcrypt"
+	"recipes-api.com/m/models"
 )
 
-func SignIn(user models.User, attempt string) (string, error) {
+func AssignToken(user models.User, attempt string) (string, error) {
 
 	var err error
 	err = user.VerifyPassword(user.Password, attempt)
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", err
 	}
-	return CreateToken(user.ID)
+	return CreateToken(uint32(user.ID))
 }

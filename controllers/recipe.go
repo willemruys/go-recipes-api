@@ -3,50 +3,73 @@ package controllers
 import (
 	"net/http"
 
-	"example.com/m/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"recipes-api.com/m/auth"
+	"recipes-api.com/m/models"
 )
 
 func FindRecipes(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	var recipes []models.Recipe
-	db.Find(&recipes)
+	if err := db.Model(&recipes).Find(&recipes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"data": err.Error()})
+		return
+	}
 	
 	c.JSON(http.StatusOK, gin.H{"data": recipes})
 }
 
 func CreateRecipe(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
+
 	var input models.CreateRecipe
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	recipe := models.Recipe{Title: input.Title, Ingredients: input.Ingredients}
 
-	db.Create(&recipe)
-	c.JSON(http.StatusOK, gin.H{"data": recipe})
+	userId,err := auth.ExtractTokenID(c);
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+
+
+	recipe := models.Recipe{Title: input.Title, Ingredients: input.Ingredients, UserID: userId}
+
+	recipeRes, err := recipe.CreateRecipe(db);
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"response": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": recipeRes})
 }
 
 func UpdateRecipe(c *gin.Context) {
 
 	db := c.MustGet("db").(*gorm.DB)
 
-	var recipeId = c.Param("id")
-	var recipe models.Recipe
-	if err := db.Where("id = ?", recipeId).First(&recipe).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	recipeId := c.Param("id")
 
 	var input models.UpdateRecipe
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	db.Model(&recipe).Updates(input)
+	var recipe *models.Recipe
+	recipe, err := recipe.UpdateRecipe(db, recipeId, input)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"response": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"Updated": recipe})
 
 }
@@ -54,17 +77,14 @@ func UpdateRecipe(c *gin.Context) {
 func DeleteRecipe(c *gin.Context) {
 
 	db := c.MustGet("db").(*gorm.DB)
-
-	var recipeId string
-	recipeId = c.Param("id")
+	recipeId := c.Param("id")
 
 	var recipe models.Recipe
-	err := db.Where("id = ?", recipeId).First(&recipe).Error; if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
  
-	db.Delete(&recipe).Where("ID = ?", recipeId)
+	if err := recipe.DeleteRecipe(db, recipeId); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return		
+	}
 
-	c.JSON(http.StatusOK, gin.H{"Deleted":recipe })
+	c.JSON(http.StatusOK, gin.H{"Deleted": recipe})
 }
