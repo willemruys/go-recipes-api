@@ -2,11 +2,13 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"html"
 	"log"
 	"strings"
 	"time"
 
+	"example.com/m/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -52,6 +54,26 @@ func (u *User) VerifyPassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
+func (u *User) ValidateEmail() (error) {
+
+	emailValid, errMessage := utils.IsEmailValid(u.Email)
+
+	if !emailValid {
+		return errors.New(fmt.Sprintf("Please provide a valid email. Error message: %s", errMessage))
+	}
+
+	return nil
+}
+
+func (u *User) ValidateUsername() (error) {
+	userNameValid, errMessage := utils.IsUserNameValid(u.Username)
+
+	if !userNameValid {
+		return errors.New(fmt.Sprintf("Username is invalid. Error message: %s", errMessage))
+	}
+
+	return nil
+}
 func (u *User) Prepare() {
 	u.Email = html.EscapeString(strings.TrimSpace(u.Email))
 	u.CreatedAt = time.Now()

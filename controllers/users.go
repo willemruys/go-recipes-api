@@ -35,6 +35,16 @@ func CreateUser(c *gin.Context) {
 
 	user.Prepare()
 
+	if err := user.ValidateEmail(); err != nil {
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := user.ValidateUsername(); err != nil {
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
+		return
+	}
+
 	userCreated, err := user.SaveUser(db)
 
 	if err != nil {
