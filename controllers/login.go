@@ -18,11 +18,9 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var err error
-
 	user := models.User{}
 
-	err = db.Model(&user).Where("email = ?", userLoginAttempt.Email).Take(&user).Error; if err != nil {
+	if err := db.Model(&user).Where("email = ?", userLoginAttempt.Email).Take(&user).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"response": "user does not exist"})
 		return
 	}
@@ -30,6 +28,7 @@ func Login(c *gin.Context) {
 	user.Prepare()
 
 	token, err := auth.SignIn(user, userLoginAttempt.Password)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"response": "failed login"})
 		return

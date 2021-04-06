@@ -107,7 +107,7 @@ func GetUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"response": err})
 		return
 	}
-	user := models.User{}
+	user := models.UserReadModel{}
 	userGotten, err := user.FindUserByID(db, uint32(uid))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

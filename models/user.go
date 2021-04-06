@@ -19,6 +19,13 @@ type User struct {
 	Password 	string 	`gorm:"size:100;not null" json:"password" binding:"required"`
 }
 
+type UserReadModel struct {
+	gorm.Model
+	ID 			uint32
+	Username 	string 	`gorm:"size:100;not null;unique" json:"username" binding:"required"`
+	Email 		string 	`gorm:"size:100;not null;unique" json:"email" binding:"required"`
+}
+
 type UpdateUser struct {
 	gorm.Model
 	Username 	string 	`gorm:"size:100;not null" json:"username" binding:"required"`
@@ -90,18 +97,18 @@ func (user *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
 	return &users, nil
 }
 
-func (u *User) FindUserByID(db *gorm.DB, uid uint32) (*User, error) {
+func (u *UserReadModel) FindUserByID(db *gorm.DB, uid uint32) (*UserReadModel, error) {
 	var err error
 	err = db.Debug().Model(User{}).Where("id = ?", uid).Take(&u).Error
 
 	if err != nil {
-		return &User{}, err
+		return nil, err
 	}
 
 	user := db.Where("id = ?", uid).Take(&u)
 
 	if user == nil {
-		return &User{}, errors.New("User Not Found")
+		return nil, errors.New("User Not Found")
 	}
 
 	return u, err
