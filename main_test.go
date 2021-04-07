@@ -99,7 +99,6 @@ func CreateUser(db *gorm.DB, ts *httptest.Server, t *testing.T) LoginResponse {
 
 func CreateRecipe(ts *httptest.Server, t *testing.T, loginRes LoginResponse) ResponseCreateRecipe {
 
-	/* Create recipes */
 	createRecipeValuesComplete := map[string]string{"Title": "my test recipe", "Ingredients": "my test ingredients"}
 
 	jsonCreateRecipeValuesComplete, _ := json.Marshal(createRecipeValuesComplete)
@@ -158,7 +157,6 @@ func GetRecipe(ts *httptest.Server, t *testing.T, loginRes LoginResponse, recipe
 
 func CreateIncompleteRecipe(ts *httptest.Server, t *testing.T, loginRes LoginResponse) {
 
-	/* Create recipes */
 	createRecipeValuesComplete := map[string]string{"Title": "my test recipe"}
 
 	jsonCreateRecipeValuesComplete, _ := json.Marshal(createRecipeValuesComplete)
