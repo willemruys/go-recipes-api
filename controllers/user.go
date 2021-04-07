@@ -21,14 +21,14 @@ func CreateUser(c *gin.Context) {
 
 	emailExists, err := user.EmailExists(db, user.Email)
 
-	if emailExists {
+	if emailExists || err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "This email adres already exists"})
 		return
 	}
 
 	userNameExists, err := user.UserNameExists(db, user.Username)
 
-	if userNameExists {
+	if userNameExists || err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "This username adres already exists"})
 		return
 	}
@@ -152,6 +152,6 @@ func GetUserRecipes(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"user": user, "recipes": recipes})
+	c.JSON(http.StatusOK, gin.H{"user": user.ID, "recipes": recipes})
 
 }

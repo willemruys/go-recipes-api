@@ -7,51 +7,64 @@ import (
 	"gorm.io/gorm"
 	"recipes-api.com/m/auth"
 	"recipes-api.com/m/models"
+	"recipes-api.com/m/services"
 )
 
-func FindRecipes(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
-	var recipes []models.Recipe
-	if err := db.Model(&recipes).Find(&recipes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"data": err.Error()})
+func GetRecipes(c *gin.Context) {
+
+	recipes, err := services.GetRecipes();
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "error retrieving recipes")
 		return
 	}
 	
 	c.JSON(http.StatusOK, gin.H{"data": recipes})
 }
 
-func CreateRecipe(c *gin.Context) {
-	db := c.MustGet("db").(*gorm.DB)
+func GetRecipe(c *gin.Context) {
+	recipeId := c.Param("id")
 
-	var input models.CreateRecipe
+	recipe, err := services.GetRecipe(recipeId)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "error retrieving recipe")
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"data": recipe})
+}
+
+func CreateRecipe(c *gin.Context) {
+
+	input := models.CreateRecipe{}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	userId,err := auth.ExtractTokenID(c);
+	userId, err := auth.ExtractTokenID(c);
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
+	recipeModel := models.Recipe{Title: input.Title, Ingredients: input.Ingredients, UserID: userId}
 
-	recipe := models.Recipe{Title: input.Title, Ingredients: input.Ingredients, UserID: userId}
-
-	recipeRes, err := recipe.CreateRecipe(db);
-
+	recipe, err := services.CreateRecipe(recipeModel); 
+	
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"response": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": recipeRes})
+	c.JSON(http.StatusOK, gin.H{"response": "recipe created", "recipe": recipe})
+
 }
 
 func UpdateRecipe(c *gin.Context) {
-
-	db := c.MustGet("db").(*gorm.DB)
 
 	recipeId := c.Param("id")
 
@@ -62,26 +75,36 @@ func UpdateRecipe(c *gin.Context) {
 		return
 	}
 
-	var recipe *models.Recipe
-	recipe, err := recipe.UpdateRecipe(db, recipeId, input)
+	recipe, err := services.GetRecipe(recipeId)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "recipe not found"})
+		return
+	}
+
+	updatedRecipe, err := recipe.UpdateRecipe(input)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"response": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Updated": recipe})
+	c.JSON(http.StatusOK, gin.H{"Updated": updatedRecipe})
 
 }
 
 func DeleteRecipe(c *gin.Context) {
 
-	db := c.MustGet("db").(*gorm.DB)
 	recipeId := c.Param("id")
 
-	var recipe models.Recipe
+	recipe, err := services.GetRecipe(recipeId)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "recipe not found"})
+		return
+	}
  
-	if err := recipe.DeleteRecipe(db, recipeId); err != nil {
+	if err := recipe.DeleteRecipe(); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return		
 	}
@@ -125,7 +148,6 @@ func AddComment(c *gin.Context) {
 		return
 	}
 	
-
 	c.JSON(http.StatusOK, gin.H{"message": savedRecipe})
 
 }

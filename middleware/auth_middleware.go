@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 	"recipes-api.com/m/auth"
 	"recipes-api.com/m/models"
+	"recipes-api.com/m/services"
 )
 
 func SetMiddlewareJSON(next http.HandlerFunc) http.HandlerFunc {
@@ -30,13 +31,15 @@ func SetMiddlewareAuthentication() gin.HandlerFunc {
 
 func RecipeOwnershipAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		db := c.MustGet("db").(*gorm.DB)
-
 		recipeId := c.Param("id")
+		
+		recipe, err := services.GetRecipe(recipeId)
 
-		var recipeModel models.Recipe
-
-		db.Model(recipeModel).Where("id = ?", recipeId).First(&recipeModel);
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"response": "Recipe not found"})
+			c.Abort()
+			return
+		}
 
 		userId, err := auth.ExtractTokenID(c)
 
@@ -46,7 +49,38 @@ func RecipeOwnershipAuthorization() gin.HandlerFunc {
 			return
 		}
 
-		if userId != recipeModel.UserID {
+		if userId != recipe.UserID {
+			c.JSON(http.StatusUnauthorized, gin.H{"response": "You do not have permission to edit this recipe"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func CommentOwnerShip() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		commentId := c.Param("id")
+
+		comment, err := services.GetComment(commentId); 
+		
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"response": "Error retrieving comment"})
+			c.Abort()
+			return
+		}
+
+		userId, err := auth.ExtractTokenID(c)
+
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"response": "Error retrieving JWT token"})
+			c.Abort()
+			return
+		}
+
+		if userId != comment.UserID {
 			c.JSON(http.StatusUnauthorized, gin.H{"response": "You do not have permission to edit this recipe"})
 			c.Abort()
 			return

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"html"
 	"log"
@@ -17,11 +16,12 @@ type User struct {
 	gorm.Model
 	Username 	string 		`gorm:"size:100;not null;unique" json:"username" binding:"required"`
 	Email 		string 		`gorm:"size:100;not null;unique" json:"email" binding:"required"`
-	Password 	string 		`gorm:"size:100;not null" json:"-" binding:"required"`
+	Password 	string 		`gorm:"size:100;not null" binding:"required"`
 	Recipes 	[]Recipe 	`gorm:"constraint:OnUpdate:CASCADE;foreignKey:UserID" json:"-"`
 }
 
 type UserReadModel struct {
+	ID          uint
 	Username 	string 	`gorm:"size:100;not null;unique" json:"username" binding:"required"`
 	Email 		string 	`gorm:"size:100;not null;unique" json:"email" binding:"required"`
 }
@@ -57,7 +57,7 @@ func (u *User) ValidateEmail() (error) {
 	emailValid, errMessage := utils.IsEmailValid(u.Email)
 
 	if !emailValid {
-		return errors.New(fmt.Sprintf("Please provide a valid email. Error message: %s", errMessage))
+		return fmt.Errorf("please provide a valid email. error message: %s", errMessage)
 	}
 
 	return nil
@@ -68,7 +68,7 @@ func (u *UpdateUser) ValidateEmail() (error) {
 	emailValid, errMessage := utils.IsEmailValid(u.Email)
 
 	if !emailValid {
-		return errors.New(fmt.Sprintf("Please provide a valid email. Error message: %s", errMessage))
+		return fmt.Errorf("please provide a valid email. error message: %s", errMessage)
 	}
 
 	return nil
@@ -78,11 +78,12 @@ func (u *User) ValidateUsername() (error) {
 	userNameValid, errMessage := utils.IsUserNameValid(u.Username)
 
 	if !userNameValid {
-		return errors.New(fmt.Sprintf("Username is invalid. Error message: %s", errMessage))
+		return fmt.Errorf("uername is invalid. error message: %s", errMessage)
 	}
 
 	return nil
 }
+
 func (u *User) Prepare() {
 	u.Email = html.EscapeString(strings.TrimSpace(u.Email))
 	u.CreatedAt = time.Now()
@@ -108,35 +109,34 @@ func (u *UpdateUser) BeforeSave(db *gorm.DB) error {
 
 func (u *User) SaveUser(db *gorm.DB) (*User, error) {
 
-	var err error
-	err = db.Debug().Create(&u).Error
+	err := db.Debug().Create(&u).Error
 	if err != nil {
 		return &User{}, err
 	}
 	return u, nil
 }
 
-func (user *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
+func (user *User) FindAllUsers(db *gorm.DB) (*[]UserReadModel, error) {
 
 	var err error
-	users:= []User{}
+	users:= []UserReadModel{}
 	err = db.Debug().Model(&User{}).Find(&users).Error
 
 	if err != nil {
-		return &[]User{}, err
+		return nil, err
 	}
 	return &users, nil
 }
 
-func (u *User) FindUserByID(db *gorm.DB, uid uint) (*User, error) {
-
-	err := db.Debug().Where("id = ?", uid).First(&u).Error
+func (u *User) FindUserByID(db *gorm.DB, uid uint) (*UserReadModel, error) {
+	var userReturnModel *UserReadModel
+	err := db.Debug().Where("id = ?", uid).First(&userReturnModel).Error
 
 	if err != nil {
 		return nil, err
 	}
 	
-	return u, nil
+	return userReturnModel, nil
 }
 
 
@@ -222,18 +222,3 @@ func (user *User) UserNameExists(db *gorm.DB, username string) (bool, error ){
 	return false, nil
 }
 
-func (user *User) UserRecipes(db *gorm.DB, userId uint64) ([]Recipe, error) {
-
-	if err :=  db.Where("id = ?", userId).First(&user).Error; err != nil {
-		return nil, err
-	}
-	
-	var recipes []Recipe
-
-	if err := db.Debug().Model(&user).Association("Recipes").Find(&recipes); err != nil {
-		return nil, err
-	}
-
-	return recipes, nil
-
-}

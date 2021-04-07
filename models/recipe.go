@@ -38,11 +38,9 @@ func (r *Recipe) CreateRecipe(db *gorm.DB) (*Recipe, error)  {
 	return r, nil
 }
 
-func (r *Recipe) UpdateRecipe(db *gorm.DB, recipeId string, input UpdateRecipe) (*Recipe, error) {
-
-	if err := db.Where("id = ?", recipeId).First(&r).Error; err != nil {
-		return nil, err
-	}
+func (r *Recipe) UpdateRecipe(input UpdateRecipe) (*Recipe, error) {
+	
+	db := LoadDB()
 
 	if err := db.Debug().Model(&r).UpdateColumns(Recipe{Title: input.Title, Ingredients: input.Ingredients}).Error; err != nil {
 		return nil, err
@@ -51,13 +49,11 @@ func (r *Recipe) UpdateRecipe(db *gorm.DB, recipeId string, input UpdateRecipe) 
 	return r, nil
 } 
 
-func (r *Recipe) DeleteRecipe(db *gorm.DB, recipeId string) (error) {
+func (r *Recipe) DeleteRecipe() (error) {
+	
+	db := LoadDB()
 
-	if err := db.Where("id = ?", recipeId).First(&r).Error; err != nil {
-		return err
-	}
-
-	if err := db.Debug().Delete(&r).Where("ID = ?", recipeId).Error; err != nil {
+	if err := db.Debug().Model(&r).Delete(&r).Error; err != nil {
 		return err
 	}
 
@@ -96,4 +92,20 @@ func (r *Recipe) GetRecipeComments(db *gorm.DB, recipeId string) ([]Comment, err
 	}
 
 	return comments, nil
+}
+
+func (user *User) UserRecipes(db *gorm.DB, userId uint64) ([]Recipe, error) {
+
+	if err :=  db.Where("id = ?", userId).First(&user).Error; err != nil {
+		return nil, err
+	}
+	
+	var recipes []Recipe
+
+	if err := db.Debug().Model(&user).Association("Recipes").Find(&recipes); err != nil {
+		return nil, err
+	}
+
+	return recipes, nil
+
 }

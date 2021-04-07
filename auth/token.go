@@ -34,8 +34,8 @@ func TokenValid(c *gin.Context) error {
 	if err != nil {
 		return err
 	}
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		Pretty(claims)
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return nil
 	}
 	return nil
 }
