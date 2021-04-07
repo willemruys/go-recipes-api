@@ -126,7 +126,7 @@ func GetUser(c *gin.Context) {
 		return
 	}
 	user := models.User{}
-	userGotten, err := user.FindUserByID(db, uint32(uid))
+	userGotten, err := user.FindUserByID(db, uint(uid))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -153,6 +153,5 @@ func GetUserRecipes(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"user": user, "recipes": recipes})
-
 
 }

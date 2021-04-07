@@ -15,14 +15,13 @@ import (
 
 type User struct {
 	gorm.Model
-	Username 	string 	`gorm:"size:100;not null;unique" json:"username" binding:"required"`
-	Email 		string 	`gorm:"size:100;not null;unique" json:"email" binding:"required"`
-	Password 	string 	`gorm:"size:100;not null" json:"-" binding:"required"`
-	Recipes 	[]Recipe `gorm:"constraint:OnUpdate:CASCADE;foreignKey:UserID"`
+	Username 	string 		`gorm:"size:100;not null;unique" json:"username" binding:"required"`
+	Email 		string 		`gorm:"size:100;not null;unique" json:"email" binding:"required"`
+	Password 	string 		`gorm:"size:100;not null" json:"-" binding:"required"`
+	Recipes 	[]Recipe 	`gorm:"constraint:OnUpdate:CASCADE;foreignKey:UserID" json:"-"`
 }
 
 type UserReadModel struct {
-	gorm.Model
 	Username 	string 	`gorm:"size:100;not null;unique" json:"username" binding:"required"`
 	Email 		string 	`gorm:"size:100;not null;unique" json:"email" binding:"required"`
 }
@@ -129,7 +128,7 @@ func (user *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
 	return &users, nil
 }
 
-func (u *User) FindUserByID(db *gorm.DB, uid uint32) (*User, error) {
+func (u *User) FindUserByID(db *gorm.DB, uid uint) (*User, error) {
 
 	err := db.Debug().Where("id = ?", uid).First(&u).Error
 

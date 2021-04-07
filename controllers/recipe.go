@@ -88,3 +88,63 @@ func DeleteRecipe(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"Deleted": recipe})
 }
+
+
+func AddComment(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+	recipeId := c.Param("id")
+	userId, err := auth.ExtractTokenID(c);
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var input models.Comment
+	var user models.User
+	foundUser, err := user.FindUserByID(db, userId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	input.UserID = foundUser.ID
+	input.UserName = foundUser.Username
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var recipe models.Recipe
+
+	savedRecipe, err := recipe.AddComment(db, recipeId, input); 
+	
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	
+
+	c.JSON(http.StatusOK, gin.H{"message": savedRecipe})
+
+}
+
+
+func GetRecipeComments(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
+	recipeId := c.Param("id")
+
+	recipe := models.Recipe{}
+
+	comments, err := recipe.GetRecipeComments(db, recipeId)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"response": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"recipe": recipe, "comments": comments})
+
+}

@@ -6,16 +6,19 @@ import (
 
 type Recipe struct {
 	gorm.Model
-	Title  		string 	`json:"title"`
-	Ingredients string 	`json:"ingredients"`
-	UserID		uint    `gorm:"constraint:OnUpdate:CASCADE"`
+	Title  		string 		`json:"title"`
+	Ingredients string 		`json:"ingredients"`
+	UserID		uint    	`gorm:"constraint:OnUpdate:CASCADE"`
+	Likes		int 		`json:"likes"`
+	Comments 	[]Comment 	`gorm:"constraint:OnUpdate:CASCADE;foreignKey:RecipeID"`
 }
+
 
 type CreateRecipe struct {
 	gorm.Model
 	Title  		string `json:"title" binding:"required"`
 	Ingredients string `json:"ingredients" binding:"required"`
-	UserID 		uint    `json:"userId"`
+	UserID 		uint   `json:"userId"`
 }
 
 type UpdateRecipe struct {
@@ -26,11 +29,11 @@ type UpdateRecipe struct {
 
 func (r *Recipe) CreateRecipe(db *gorm.DB) (*Recipe, error)  {
 
-	err := db.Debug().Create(&r).Error
-
-	if err != nil {
+	if err := db.Debug().Create(&r).Error; err != nil {
 		return nil, err
 	}
+
+	db.Model(&r).Save(&r)
 
 	return r, nil
 }
@@ -60,4 +63,37 @@ func (r *Recipe) DeleteRecipe(db *gorm.DB, recipeId string) (error) {
 
 	return nil
 
+}
+
+func (r *Recipe) AddComment(db *gorm.DB, recipeId string, comment Comment) (*Recipe, error) {
+
+	if err := db.Where("id = ?", recipeId).First(&r).Error; err != nil {
+		return nil, err
+	}
+
+	comments := append(r.Comments, comment)
+
+	r.Comments = comments
+
+	if err := db.Save(&r).Error; err != nil {
+		return nil, err
+	}
+
+	return r, nil
+
+}
+
+func (r *Recipe) GetRecipeComments(db *gorm.DB, recipeId string) ([]Comment, error) {
+
+	if err :=  db.Where("id = ?", recipeId).First(&r).Error; err != nil {
+		return nil, err
+	}
+
+	var comments []Comment
+
+	if err := db.Debug().Model(&r).Association("Comments").Find(&comments); err != nil {
+		return nil, err
+	}
+
+	return comments, nil
 }

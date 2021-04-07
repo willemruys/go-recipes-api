@@ -10,8 +10,9 @@ import (
 
 func main() {
 	db:= models.SetupModels()
-
-	db.AutoMigrate(&models.User{}, &models.Recipe{})
+	if err := db.Model(&models.Recipe{}).Association("Comments").Error; err != nil {
+		panic("Error creating assocation")
+	}
 
 	setupServer(db).Run()
 }
@@ -26,6 +27,8 @@ func setupServer(db *gorm.DB) *gin.Engine {
 
 	r.GET("/recipes", controllers.FindRecipes)
 	r.POST("/recipes", middleware.SetMiddlewareAuthentication(), controllers.CreateRecipe)
+	r.PATCH("/recipes/:id/comment", middleware.SetMiddlewareAuthentication(), controllers.AddComment)
+	r.GET("recipes/:id/comments", middleware.SetMiddlewareAuthentication(), controllers.GetRecipeComments)
 	r.PATCH("/recipes/:id", middleware.SetMiddlewareAuthentication(), middleware.RecipeOwnershipAuthorization(), controllers.UpdateRecipe)
 	r.DELETE("/recipes/:id", middleware.SetMiddlewareAuthentication(), controllers.DeleteRecipe)
 
