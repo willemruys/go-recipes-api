@@ -41,7 +41,7 @@ func RecipeOwnershipAuthorization() gin.HandlerFunc {
 			return
 		}
 
-		userId, err := auth.ExtractTokenID(c)
+		userId, err := auth.ExtractTokenIDFromGinContext(c)
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"response": "Error retrieving JWT token"})
@@ -72,7 +72,7 @@ func CommentOwnerShip() gin.HandlerFunc {
 			return
 		}
 
-		userId, err := auth.ExtractTokenID(c)
+		userId, err := auth.ExtractTokenIDFromGinContext(c)
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"response": "Error retrieving JWT token"})
@@ -100,7 +100,7 @@ func OwnProfileOwnerShip() gin.HandlerFunc {
 
 		db.Model(user).Where("id = ?", userId).First(&user);
 
-		userIdFromJwt, err := auth.ExtractTokenID(c)
+		userIdFromJwt, err := auth.ExtractTokenIDFromGinContext(c)
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"response": "Error retrieving JWT token"})

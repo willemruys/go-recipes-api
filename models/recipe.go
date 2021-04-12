@@ -8,7 +8,7 @@ type Recipe struct {
 	gorm.Model
 	Title  		string 		`json:"title"`
 	Ingredients string 		`json:"ingredients"`
-	UserID		uint    	`gorm:"constraint:OnUpdate:CASCADE"`
+	UserID		uint64    	`gorm:"constraint:OnUpdate:CASCADE"`
 	Likes		int 		`json:"likes"`
 	Comments 	[]Comment 	`gorm:"constraint:OnUpdate:CASCADE;foreignKey:RecipeID"`
 }
@@ -61,11 +61,9 @@ func (r *Recipe) DeleteRecipe() (error) {
 
 }
 
-func (r *Recipe) AddComment(db *gorm.DB, recipeId string, comment Comment) (*Recipe, error) {
+func (r *Recipe) AddComment(recipeId string, comment Comment) (*Recipe, error) {
 
-	if err := db.Where("id = ?", recipeId).First(&r).Error; err != nil {
-		return nil, err
-	}
+	db := LoadDB()
 
 	comments := append(r.Comments, comment)
 
@@ -79,11 +77,9 @@ func (r *Recipe) AddComment(db *gorm.DB, recipeId string, comment Comment) (*Rec
 
 }
 
-func (r *Recipe) GetRecipeComments(db *gorm.DB, recipeId string) ([]Comment, error) {
+func (r *Recipe) GetRecipeComments(recipeId string) ([]Comment, error) {
 
-	if err :=  db.Where("id = ?", recipeId).First(&r).Error; err != nil {
-		return nil, err
-	}
+	db := LoadDB()
 
 	var comments []Comment
 
@@ -92,20 +88,4 @@ func (r *Recipe) GetRecipeComments(db *gorm.DB, recipeId string) ([]Comment, err
 	}
 
 	return comments, nil
-}
-
-func (user *User) UserRecipes(db *gorm.DB, userId uint64) ([]Recipe, error) {
-
-	if err :=  db.Where("id = ?", userId).First(&user).Error; err != nil {
-		return nil, err
-	}
-	
-	var recipes []Recipe
-
-	if err := db.Debug().Model(&user).Association("Recipes").Find(&recipes); err != nil {
-		return nil, err
-	}
-
-	return recipes, nil
-
 }

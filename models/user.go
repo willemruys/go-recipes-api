@@ -14,6 +14,7 @@ import (
 
 type User struct {
 	gorm.Model
+	ID          uint64
 	Username 	string 		`gorm:"size:100;not null;unique" json:"username" binding:"required"`
 	Email 		string 		`gorm:"size:100;not null;unique" json:"email" binding:"required"`
 	Password 	string 		`gorm:"size:100;not null" binding:"required"`
@@ -21,7 +22,7 @@ type User struct {
 }
 
 type UserReadModel struct {
-	ID          uint
+	ID          uint64
 	Username 	string 	`gorm:"size:100;not null;unique" json:"username" binding:"required"`
 	Email 		string 	`gorm:"size:100;not null;unique" json:"email" binding:"required"`
 }
@@ -116,62 +117,26 @@ func (u *User) SaveUser(db *gorm.DB) (*User, error) {
 	return u, nil
 }
 
-func (user *User) FindAllUsers(db *gorm.DB) (*[]UserReadModel, error) {
+func (u *User) UpdatePersonalDetails(input UpdateUser) (*User, error) {
 
-	var err error
-	users:= []UserReadModel{}
-	err = db.Debug().Model(&User{}).Find(&users).Error
+	db := LoadDB()
 
-	if err != nil {
-		return nil, err
-	}
-	return &users, nil
-}
-
-func (u *User) FindUserByID(db *gorm.DB, uid uint) (*UserReadModel, error) {
-	var userReturnModel *UserReadModel
-	err := db.Debug().Where("id = ?", uid).First(&userReturnModel).Error
-
-	if err != nil {
-		return nil, err
-	}
-	
-	return userReturnModel, nil
-}
-
-
-func (u *User) UpdatePersonalDetails(db *gorm.DB, uid string, input UpdateUser) (*User, error) {
-
-	err := u.BeforeSave(db)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err :=  db.Where("id = ?", uid).First(&u).Error; err != nil {
-		return nil, err
-	}
-
-	db = db.Debug().Model(&u).UpdateColumns(
+	err := db.Debug().Model(&u).UpdateColumns(
 		map[string]interface{}{
 			"email":     	input.Email,
 			"username": 	input.Username,
 		},
 	)
 
-	if db.Error != nil {
-		return nil, db.Error
-	}
-
-	err = db.Debug().Model(&u).Where("id = ?", uid).Take(&u).Error
 	if err != nil {
-		return nil, err
+		return nil, db.Error
 	}
 
 	return u, nil
 }
 
-func (u *User) UpdateUserPassword(db *gorm.DB, uid string, newPassword string) (*User, error) {
-
+func (u *User) UpdateUserPassword(uid uint64, newPassword string) (*User, error) {
+	db := LoadDB()
 	if err :=  db.Where("id = ?", uid).First(&u).Error; err != nil {
 		return nil, err
 	}
@@ -196,7 +161,8 @@ func (u *User) UpdateUserPassword(db *gorm.DB, uid string, newPassword string) (
 	return u, nil
 }
 
-func (user *User) EmailExists(db *gorm.DB, email string) (bool, error ){
+func (user *User) EmailExists(email string) (bool, error ){
+	db := LoadDB()
 	var userByEmailCount int64
 	if err := db.Model(&user).Select("id").Where("email = ?", email).Count(&userByEmailCount).Error; err != nil {
        panic(err)
@@ -209,7 +175,8 @@ func (user *User) EmailExists(db *gorm.DB, email string) (bool, error ){
 	return false, nil
 }
 
-func (user *User) UserNameExists(db *gorm.DB, username string) (bool, error ){
+func (user *User) UserNameExists(username string) (bool, error ){
+	db := LoadDB()
 	var userByUserNameCount int64
 	if err := db.Model(&user).Select("id").Where("username = ?", username).Count(&userByUserNameCount).Error; err != nil {
         panic(err)
@@ -222,3 +189,14 @@ func (user *User) UserNameExists(db *gorm.DB, username string) (bool, error ){
 	return false, nil
 }
 
+func (user *User) UserRecipes() ([]Recipe, error) {
+	db := LoadDB()
+	var recipes []Recipe
+
+	if err := db.Debug().Model(&user).Association("Recipes").Find(&recipes); err != nil {
+		return nil, err
+	}
+
+	return recipes, nil
+
+}

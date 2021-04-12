@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"gorm.io/gorm"
+	"recipes-api.com/m/auth"
 	"recipes-api.com/m/models"
 )
 
@@ -38,6 +39,7 @@ func TestRunMainTests(t *testing.T) {
 	recipe := CreateRecipe(ts, t, loginRes)
 	GetRecipe(ts, t, loginRes, recipe)
 	CreateIncompleteRecipe(ts, t, loginRes)
+	UpdateUserPersonalDetails(ts, t, loginRes)
 }
 
 func CreateUser(db *gorm.DB, ts *httptest.Server, t *testing.T) LoginResponse {
@@ -179,4 +181,37 @@ func CreateIncompleteRecipe(ts *httptest.Server, t *testing.T, loginRes LoginRes
         t.Fatalf("Expected status code 400, got %v", completeResp.StatusCode)
     }
 	
+}
+
+
+func UpdateUserPersonalDetails(ts *httptest.Server, t *testing.T, loginRes LoginResponse) {
+
+	updateUserDetails := map[string]string{"Email": "updatedUser@gmail.com", "Username": "updatedUsername"}
+
+	jsonUpdateUserDetails, _ := json.Marshal(updateUserDetails)
+
+
+	userId, err := auth.ExtractTokenIDFromToken(loginRes.Token)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/user/personal-details/%v", ts.URL, userId), bytes.NewBuffer(jsonUpdateUserDetails))
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", loginRes.Token))
+
+	completeResp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+        t.Fatalf("Expected no error, got %v", err.Error())
+    }
+
+	if completeResp.StatusCode != 200 {
+        t.Fatalf("Expected status code 200, got %v", completeResp.StatusCode)
+    }
 }

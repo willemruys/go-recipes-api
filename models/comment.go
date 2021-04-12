@@ -5,7 +5,7 @@ import "gorm.io/gorm"
 type Comment struct {
 	gorm.Model
 	Text      	string 			`gorm:"size:255;not null;unique" json:"text" binding:"required"`
-	UserID 		uint
+	UserID 		uint64
 	UserName    string
 	RecipeID  	uint
 }
