@@ -5,7 +5,8 @@
 2. clone repository
 3. run `go run` to run the application and `go test` to run the tests
 4. debugger configuration:
-``` "configurations": [
+``` 
+"configurations": [
         {
             "name": "Launch Package",
             "type": "go",
@@ -13,4 +14,5 @@
             "mode": "debug",
             "program": "${workspaceFolder}"
         }
-    ]```
+    ]
+```
