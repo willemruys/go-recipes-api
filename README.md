@@ -31,39 +31,32 @@ POSTGRES_PORT=<db-port> // 5432 default local for pql
 
 ## Resources
 ### Recipes
-
 #### routes
-```
-GET /recipe
-GET /recipe/:id
-PATCH /recipes/:id
-DELEte /recipes/:id
-POST /recipes
-PATCH /recipes/:id/comment
-GET /recipes/:id/comments
-````
-#### recipe controllers
-- GetRecipes
-    - uses `GetRecipes` method from `services` to retrieve all recipes
-- GetRecipe 
-    - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
-- CreateRecipe
-    - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
-    - `UpdateRecipe` method on Recipe model is then used to update the recipe information
-- DeleteRecipe
-    - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
-    - `DeleteRecipe` method on Recipe model is then used to delete the recipe.
-- AddComment
-    - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
-    - `AddComment` method on Recipe model is then used to delete the recipe.
-- GetRecipeComments
-    - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
-    - `GetComments` method on Recipe model is then used to delete the recipe.
-- AddLike
-    - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
-    - `AddLike` method on Recipe model is then used to delete the recipe.
-- RemoveLike
-    - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
-    - `RemoveLike` method on Recipe model is then used to delete the recipe.
+- GET /recipe\
+Retrieve all recipes\
+Middleware: JWT validation
+- GET /recipe/:id\
+retrieve recipe by id\
+Middleware: JWT validation
+- POST /recipes\
+create recipe\
+Middleware: JWT validation
+- PATCH /recipes/:id\
+Update recipe\
+Middleware: JWT validation and recipe ownership validation
+- DELETE /recipes/:id\
+Delete recipe\
+Middleware: JWT validation and recipe ownership validation
+- PATCH /recipes/:id/comment\
+add comment to recipe\
+Middleware: JWT validation
+- GET /recipes/:id/comments\
+Get all comments placed on a recipe
 
-
+### Users
+#### routes
+- GET /user/:id
+- GET /user/:id/recipes
+- POST /user
+- PATCH /user/personal-details/:id
+- PATCH /user/password/:id
