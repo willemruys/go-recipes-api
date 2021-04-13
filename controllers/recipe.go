@@ -11,7 +11,7 @@ import (
 
 func GetRecipes(c *gin.Context) {
 
-	recipes, err := services.GetRecipes();
+	recipes, err := services.GetRecipes()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, "error retrieving recipes")
@@ -48,7 +48,7 @@ func CreateRecipe(c *gin.Context) {
 		return
 	}
 
-	userId, err := auth.ExtractTokenIDFromGinContext(c);
+	userId, err := auth.ExtractTokenIDFromGinContext(c)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -57,7 +57,7 @@ func CreateRecipe(c *gin.Context) {
 
 	recipeModel := models.Recipe{Title: input.Title, Ingredients: input.Ingredients, UserID: userId}
 
-	recipe, err := services.CreateRecipe(recipeModel); 
+	recipe, err := services.CreateRecipe(recipeModel)
 	
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"response": err.Error()})
@@ -130,7 +130,8 @@ func DeleteRecipe(c *gin.Context) {
 func AddComment(c *gin.Context) {
 	recipeId := c.Param("id")
 
-	userId, err := auth.ExtractTokenIDFromGinContext(c);
+	userId, err := auth.ExtractTokenIDFromGinContext(c)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -158,7 +159,7 @@ func AddComment(c *gin.Context) {
 		return
 	}
 
-	recipe, err := services.GetRecipe(recipeId);
+	recipe, err := services.GetRecipe(recipeId)
 
 	if err != nil {
 		if (err.Error() == "record not found") {
@@ -170,7 +171,7 @@ func AddComment(c *gin.Context) {
 		}
 	}
 
-	savedRecipe, err := recipe.AddComment(recipeId, input); 
+	savedRecipe, err := recipe.AddComment(recipeId, input)
 	
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -214,7 +215,8 @@ func AddLike(c *gin.Context) {
 
 	recipeId := c.Param("id")
 
-	userId, err := auth.ExtractTokenIDFromGinContext(c);
+	userId, err := auth.ExtractTokenIDFromGinContext(c)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -233,7 +235,6 @@ func AddLike(c *gin.Context) {
 		}
 	}
 
-
 	var userIdAsInt = int64(userId)
 
 	if err := recipe.AddLike(userIdAsInt); err != nil {
@@ -250,7 +251,8 @@ func RemoveLike(c *gin.Context) {
 
 	recipeId := c.Param("id")
 
-	userId, err := auth.ExtractTokenIDFromGinContext(c);
+	userId, err := auth.ExtractTokenIDFromGinContext(c)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
