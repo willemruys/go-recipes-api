@@ -53,3 +53,10 @@ POSTGRES_PORT=<db-port> // 5432 default local for pql
 - GET /recipes/:id/comments
         - Get all comments placed on a recipe
 
+### Users
+#### routes
+GET /user/:id
+GET /user/:id/recipes
+POST /user
+PATCH /user/personal-details/:id
+PATCH /user/password/:id
