@@ -34,6 +34,10 @@ func setupServer(db *gorm.DB) *gin.Engine {
 	r.PATCH("/recipes/:id", middleware.SetMiddlewareAuthentication(), middleware.RecipeOwnershipAuthorization(), controllers.UpdateRecipe)
 	r.DELETE("/recipes/:id", middleware.SetMiddlewareAuthentication(), controllers.DeleteRecipe)
 
+	/* likes */
+	r.PATCH("/recipes/:id/like/add", middleware.SetMiddlewareAuthentication(), controllers.AddLike)
+	r.PATCH("/recipes/:id/like/remove", middleware.SetMiddlewareAuthentication(), controllers.RemoveLike)
+
 	/* user */
 	r.GET("/user/:id", controllers.GetUser)
 	r.GET("user/:id/recipes", controllers.GetUserRecipes)

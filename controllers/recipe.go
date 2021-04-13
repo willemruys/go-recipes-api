@@ -208,3 +208,74 @@ func GetRecipeComments(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"recipe": recipe, "comments": comments})
 
 }
+
+
+func AddLike(c *gin.Context) {
+
+	recipeId := c.Param("id")
+
+	userId, err := auth.ExtractTokenIDFromGinContext(c);
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+
+	recipe, err := services.GetRecipe(recipeId)
+
+	if err != nil {
+		if (err.Error() == "record not found") {
+			c.JSON(http.StatusNotFound, err.Error())
+			return
+		} else {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+
+	var userIdAsInt = int64(userId)
+
+	if err := recipe.AddLike(userIdAsInt); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"recipe": recipe})
+
+}
+
+
+func RemoveLike(c *gin.Context) {
+
+	recipeId := c.Param("id")
+
+	userId, err := auth.ExtractTokenIDFromGinContext(c);
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+
+	recipe, err := services.GetRecipe(recipeId)
+
+	if err != nil {
+		if (err.Error() == "record not found") {
+			c.JSON(http.StatusNotFound, err.Error())
+			return
+		} else {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	var userIdAsInt = int64(userId)
+
+	if err := recipe.RemoveLike(userIdAsInt); err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"recipe": recipe})
+
+}

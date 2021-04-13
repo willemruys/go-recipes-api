@@ -1,16 +1,20 @@
 package models
 
 import (
+	"errors"
+
+	"github.com/lib/pq"
 	"gorm.io/gorm"
+	"recipes-api.com/m/utils"
 )
 
 type Recipe struct {
 	gorm.Model
-	Title  		string 		`json:"title"`
-	Ingredients string 		`json:"ingredients"`
-	UserID		uint64    	`gorm:"constraint:OnUpdate:CASCADE"`
-	Likes		int 		`json:"likes"`
-	Comments 	[]Comment 	`gorm:"constraint:OnUpdate:CASCADE;foreignKey:RecipeID"`
+	Title  		string 				`json:"title"`
+	Ingredients string 				`json:"ingredients"`
+	UserID		uint64    			`gorm:"constraint:OnUpdate:CASCADE"`
+	Likes		pq.Int64Array 		`gorm:"type:integer[]"`
+	Comments 	[]Comment 			`gorm:"constraint:OnUpdate:CASCADE;foreignKey:RecipeID"`
 }
 
 
@@ -88,4 +92,47 @@ func (r *Recipe) GetRecipeComments(recipeId string) ([]Comment, error) {
 	}
 
 	return comments, nil
+}
+
+func (r *Recipe) AddLike(userId int64) (error) {
+
+	db := LoadDB()
+
+	i := utils.IndexOfItemInSlice(r.Likes, userId);
+
+	if i > -1 {
+		return errors.New("this recipe is already liked by this user")
+	}
+
+	likes := append(r.Likes, userId)
+
+	r.Likes = likes
+
+	if err := db.Save(r).Error; err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (r *Recipe) RemoveLike(userId int64) (error) {
+
+	db := LoadDB()
+
+	i := utils.IndexOfItemInSlice(r.Likes, userId)
+
+	if i == -1 {
+		return errors.New("like from user not found")
+	}
+
+	modifiedLikes := utils.RemoveItemFromSlice(r.Likes, i)
+
+	r.Likes = modifiedLikes
+
+	if err := db.Save(r).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
