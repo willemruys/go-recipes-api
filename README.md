@@ -55,8 +55,8 @@ POSTGRES_PORT=<db-port> // 5432 default local for pql
 
 ### Users
 #### routes
-GET /user/:id
-GET /user/:id/recipes
-POST /user
-PATCH /user/personal-details/:id
-PATCH /user/password/:id
+- GET /user/:id
+- GET /user/:id/recipes
+- POST /user
+- PATCH /user/personal-details/:id
+- PATCH /user/password/:id
