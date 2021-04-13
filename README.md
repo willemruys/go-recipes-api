@@ -32,25 +32,25 @@ POSTGRES_PORT=<db-port> // 5432 default local for pql
 ## Resources
 ### Recipes
 #### routes
-- GET /recipe
-Retrieve all recipes
+- GET /recipe\
+Retrieve all recipes\
 Middleware: JWT validation
-- GET /recipe/:id
-retrieve recipe by id
+- GET /recipe/:id\
+retrieve recipe by id\
 Middleware: JWT validation
-- POST /recipes
-create recipe
+- POST /recipes\
+create recipe\
 Middleware: JWT validation
-- PATCH /recipes/:id
-Update recipe
+- PATCH /recipes/:id\
+Update recipe\
 Middleware: JWT validation and recipe ownership validation
-- DELETE /recipes/:id
-Delete recipe
+- DELETE /recipes/:id\
+Delete recipe\
 Middleware: JWT validation and recipe ownership validation
-- PATCH /recipes/:id/comment
-add comment to recipe
+- PATCH /recipes/:id/comment\
+add comment to recipe\
 Middleware: JWT validation
-- GET /recipes/:id/comments
+- GET /recipes/:id/comments\
 Get all comments placed on a recipe
 
 ### Users
