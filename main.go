@@ -43,8 +43,15 @@ func setupServer(db *gorm.DB) *gin.Engine {
 	r.GET("user/:id/recipes", controllers.GetUserRecipes)
 	r.POST("/user", controllers.CreateUser)
 	r.PATCH("/user/personal-details/:id", middleware.SetMiddlewareAuthentication(), middleware.OwnProfileOwnerShip(), controllers.UpdateUserPersonalDetails)
-	r.PATCH("/user/password/:id", middleware.SetMiddlewareAuthentication(),middleware.OwnProfileOwnerShip(), controllers.UpdatePassword)
+	r.PATCH("/user/password/:id", middleware.SetMiddlewareAuthentication(), middleware.OwnProfileOwnerShip(), controllers.UpdatePassword)
 
+	/* list */
+	r.POST("/list", middleware.SetMiddlewareAuthentication(), controllers.CreateList)
+	r.GET("/list/:id", middleware.SetMiddlewareAuthentication(), controllers.GetList)
+	r.PATCH("/list/:id", middleware.SetMiddlewareAuthentication(), middleware.ListOwnerShip(), controllers.UpdateList)
+	r.DELETE("/list/:id", middleware.SetMiddlewareAuthentication(), middleware.ListOwnerShip(), controllers.DeleteList)
+	r.POST("/list/:id/recipe/:recipeId", middleware.SetMiddlewareAuthentication(), middleware.ListOwnerShip(), controllers.AddRecipeToList)
+	r.DELETE("/list/:id/recipe/:recipeId", middleware.SetMiddlewareAuthentication(), middleware.ListOwnerShip(), controllers.RemoveRecipeFromList)
 
 	/* comments */
 	r.PATCH("/comment/:id", middleware.SetMiddlewareAuthentication(), middleware.CommentOwnerShip(), controllers.UpdateComment)

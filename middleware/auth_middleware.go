@@ -118,3 +118,35 @@ func OwnProfileOwnerShip() gin.HandlerFunc {
 	}
 }
 
+func ListOwnerShip() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		listId := c.Param("id")
+
+		list, err := services.GetList(listId); 
+		
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"response": "Error retrieving list"})
+			c.Abort()
+			return
+		}
+
+		userId, err := auth.ExtractTokenIDFromGinContext(c)
+
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"response": "Error retrieving JWT token"})
+			c.Abort()
+			return
+		}
+
+		if userId != list.UserID {
+			c.JSON(http.StatusUnauthorized, gin.H{"response": "You do not have permission to edit this list"})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+

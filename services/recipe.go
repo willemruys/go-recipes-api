@@ -16,13 +16,13 @@ func GetRecipes() ([]models.Recipe, error) {
 	return recipes, nil
 } 
 
-func GetRecipe(recipeId string) (*models.Recipe, error) {
+func GetRecipe(recipeId string) (models.Recipe, error) {
 	
 	db := models.LoadDB()
-	var recipe *models.Recipe
+	var recipe models.Recipe
 
 	if err := db.Debug().Model(&recipe).Where("id = ?", recipeId).First(&recipe).Error; err != nil {
-		return nil, err
+		return models.Recipe{}, err
 	}
 
 	return recipe, nil

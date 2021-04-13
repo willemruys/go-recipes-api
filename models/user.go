@@ -19,6 +19,7 @@ type User struct {
 	Email 		string 		`gorm:"size:100;not null;unique" json:"email" binding:"required"`
 	Password 	string 		`gorm:"size:100;not null" binding:"required"`
 	Recipes 	[]Recipe 	`gorm:"constraint:OnUpdate:CASCADE;foreignKey:UserID" json:"-"`
+	List 		[]List 		`gorm:"foreignKey:UserID"`
 }
 
 type UserReadModel struct {
