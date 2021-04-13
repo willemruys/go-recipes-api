@@ -36,7 +36,7 @@ POSTGRES_PORT=<db-port> // 5432 default local for pql
 - GetRecipe 
     - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
 - CreateRecipe
-    - uses ``GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
+    - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
     - `UpdateRecipe` method on Recipe model is then used to update the recipe information
 - DeleteRecipe
     - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
