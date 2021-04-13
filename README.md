@@ -29,8 +29,20 @@ POSTGRES_PORT=<db-port> // 5432 default local for pql
     ]
 ```
 
-## Controllers
-### Recipe controller 
+## Resources
+### Recipes
+
+#### routes
+```
+GET /recipe
+GET /recipe/:id
+PATCH /recipes/:id
+DELEte /recipes/:id
+POST /recipes
+PATCH /recipes/:id/comment
+GET /recipes/:id/comments
+````
+#### recipe controllers
 - GetRecipes
     - uses `GetRecipes` method from `services` to retrieve all recipes
 - GetRecipe 
@@ -53,3 +65,5 @@ POSTGRES_PORT=<db-port> // 5432 default local for pql
 - RemoveLike
     - uses `GetRecipe` method from `services` to retrieve single recipe using the id passed as a param.
     - `RemoveLike` method on Recipe model is then used to delete the recipe.
+
+
