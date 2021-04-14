@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"recipes-api.com/m/auth"
 	"recipes-api.com/m/models"
 	"recipes-api.com/m/services"
 )
@@ -58,7 +59,8 @@ func CreateUser(c *gin.Context) {
 
 func UpdateUserPersonalDetails(c *gin.Context) {
 
-	userId, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	userId, err := auth.ExtractTokenIDFromGinContext(c)
+
 	if err != nil {
 		c.JSON(http.StatusNotAcceptable, gin.H{"response": err.Error()})
 		return
@@ -98,19 +100,17 @@ func UpdateUserPersonalDetails(c *gin.Context) {
 		return
 	}
 	
-
-	updatedUser, err := user.UpdatePersonalDetails(input)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"response": err.Error()})
+	if err := user.UpdatePersonalDetails(input); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"response": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"response": updatedUser})
+	c.JSON(http.StatusOK, gin.H{"response": user})
 }
 
 func UpdatePassword(c *gin.Context) {
 
-	userId, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	userId, err := auth.ExtractTokenIDFromGinContext(c)
 	if err != nil {
 		c.JSON(http.StatusNotAcceptable, gin.H{"response": err.Error()})
 		return

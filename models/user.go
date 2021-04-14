@@ -118,7 +118,7 @@ func (u *User) SaveUser(db *gorm.DB) (*User, error) {
 	return u, nil
 }
 
-func (u *User) UpdatePersonalDetails(input UpdateUser) (*User, error) {
+func (u *User) UpdatePersonalDetails(input UpdateUser) (error) {
 
 	db := LoadDB()
 
@@ -127,13 +127,13 @@ func (u *User) UpdatePersonalDetails(input UpdateUser) (*User, error) {
 			"email":     	input.Email,
 			"username": 	input.Username,
 		},
-	)
+	).Error
 
 	if err != nil {
-		return nil, db.Error
+		return err
 	}
 
-	return u, nil
+	return nil
 }
 
 func (u *User) UpdateUserPassword(uid uint64, newPassword string) (*User, error) {

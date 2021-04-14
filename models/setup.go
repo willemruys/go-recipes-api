@@ -14,14 +14,52 @@ import (
 var db *gorm.DB
 
 func SetupModels() *gorm.DB {
-	var err error
-	err = godotenv.Load(".env")
+
+	err := godotenv.Load(".env")
 
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"), os.Getenv("POSTGRES_PORT"))
+	var host string
+	var user string
+	var password string
+	var databaseName string 
+	var port string
+
+	if os.Getenv("ENVIRONMENT") == "LOCAL" {
+		host = os.Getenv("POSTGRES_HOST_LOCAL")
+		user = os.Getenv("POSTGRES_USER_LOCAL")
+		password = os.Getenv("POSTGRES_PASSWORD_LOCAL")
+		databaseName =  os.Getenv("POSTGRES_DB_LOCAL")
+		port = os.Getenv("POSTGRES_PORT_LOCAL")
+	}
+
+	if os.Getenv("ENVIRONMENT") == "LOCAL_GCL" {
+		host = os.Getenv("POSTGRES_HOST_LOCAL_GCL")
+		user = os.Getenv("POSTGRES_USER_LOCAL_GCL")
+		password = os.Getenv("POSTGRES_PASSWORD_LOCAL_GCL")
+		databaseName =  os.Getenv("POSTGRES_DB_LOCAL_GCL")
+		port = os.Getenv("POSTGRES_PORT_LOCAL_GCL")
+	}
+
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		host = os.Getenv("POSTGRES_HOST_DEV")
+		user = os.Getenv("POSTGRES_USER_DEV")
+		password = os.Getenv("POSTGRES_PASSWORD_DEV")
+		databaseName =  os.Getenv("POSTGRES_DB_DEV")
+		port = os.Getenv("POSTGRES_PORT_DEV")
+	}
+	
+	if os.Getenv("ENVIRONMENT") == "PROD" {
+		host = os.Getenv("POSTGRES_HOST_PROD")
+		user = os.Getenv("POSTGRES_USER_PROD")
+		password = os.Getenv("POSTGRES_PASSWORD_PROD")
+		databaseName =  os.Getenv("POSTGRES_DB_PROD")
+		port = os.Getenv("POSTGRES_PORT_PROD")
+	}
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", host, user, password, databaseName, port)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -46,8 +84,45 @@ func SetupMockModels() *gorm.DB {
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
+	var host string
+	var user string
+	var password string
+	var databaseName string 
+	var port string
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_MOCK_DB"), os.Getenv("POSTGRES_PORT"))
+	if os.Getenv("ENVIRONMENT") == "LOCAL" {
+		host = os.Getenv("POSTGRES_HOST_LOCAL")
+		user = os.Getenv("POSTGRES_USER_LOCAL")
+		password = os.Getenv("POSTGRES_PASSWORD_LOCAL")
+		databaseName =  os.Getenv("POSTGRES_DB_LOCAL")
+		port = os.Getenv("POSTGRES_PORT_LOCAL")
+	}
+
+	if os.Getenv("ENVIRONMENT") == "LOCAL_GCL" {
+		host = os.Getenv("POSTGRES_HOST_LOCAL")
+		user = os.Getenv("POSTGRES_USER_LOCAL")
+		password = os.Getenv("POSTGRES_PASSWORD_LOCAL")
+		databaseName =  os.Getenv("POSTGRES_DB_LOCAL")
+		port = os.Getenv("POSTGRES_PORT_LOCAL")
+	}
+
+	if os.Getenv("ENVIRONMENT") == "DEV" {
+		host = os.Getenv("POSTGRES_HOST_DEV")
+		user = os.Getenv("POSTGRES_USER_DEV")
+		password = os.Getenv("POSTGRES_PASSWORD_DEV")
+		databaseName =  os.Getenv("POSTGRES_DB_DEV")
+		port = os.Getenv("POSTGRES_PORT_DEV")
+	}
+	
+	if os.Getenv("ENVIRONMENT") == "PROD" {
+		host = os.Getenv("POSTGRES_HOST_PROD")
+		user = os.Getenv("POSTGRES_USER_PROD")
+		password = os.Getenv("POSTGRES_PASSWORD_PROD")
+		databaseName =  os.Getenv("POSTGRES_DB_PROD")
+		port = os.Getenv("POSTGRES_PORT_PROD")
+	}
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", host, user, password, databaseName, port)
 
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 

@@ -1,7 +1,11 @@
 package main
 
 import (
+	"log"
+	"os"
+
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 	"recipes-api.com/m/controllers"
 	"recipes-api.com/m/middleware"
@@ -19,6 +23,20 @@ func main() {
 
 func setupServer(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
+
+
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	if os.Getenv("ENVIRONMENT") == "LOCAL" || os.Getenv("ENVIRONMENT") == "LOCAL_GCL" || os.Getenv("ENVIRONMENT") == "DEV" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	
 
 	r.Use(func(c *gin.Context) {
 		c.Set("db", db)
@@ -42,8 +60,8 @@ func setupServer(db *gorm.DB) *gin.Engine {
 	r.GET("/user/:id", controllers.GetUser)
 	r.GET("user/:id/recipes", controllers.GetUserRecipes)
 	r.POST("/user", controllers.CreateUser)
-	r.PATCH("/user/personal-details/:id", middleware.SetMiddlewareAuthentication(), middleware.OwnProfileOwnerShip(), controllers.UpdateUserPersonalDetails)
-	r.PATCH("/user/password/:id", middleware.SetMiddlewareAuthentication(), middleware.OwnProfileOwnerShip(), controllers.UpdatePassword)
+	r.PATCH("/user/personal-details", middleware.SetMiddlewareAuthentication(), controllers.UpdateUserPersonalDetails)
+	r.PATCH("/user/password", middleware.SetMiddlewareAuthentication(), controllers.UpdatePassword)
 
 	/* list */
 	r.POST("/list", middleware.SetMiddlewareAuthentication(), controllers.CreateList)
