@@ -55,9 +55,10 @@ func SetupMockModels() *gorm.DB {
 		panic("Error connecting to DB")
 	}
 
-	db.Migrator().DropTable(&User{}, &Recipe{}, &Comment{})
+	db.Migrator().DropTable(&User{}, &Recipe{}, &Comment{}, &List{})
 
-	db.AutoMigrate(&User{}, &Recipe{}, &Comment{})
+	db.AutoMigrate(&User{}, &Recipe{}, &Comment{}, &List{})
+
 
 	return db
 }

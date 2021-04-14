@@ -34,7 +34,7 @@ func CreateList(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"response": list})
+	c.JSON(http.StatusOK, gin.H{"list": list})
 
 }
 

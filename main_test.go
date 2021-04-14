@@ -25,9 +25,29 @@ type RecipeResponse struct {
 	Likes 		int 	`json:"likes"`
 }
 
+type ListResponse struct {
+	gorm.Model
+	Title 		string  `json:"title"`
+	Description string	`json:"description"`
+	UserID 		uint64	`json:"userId"`	
+}
+
 type ResponseCreateRecipe struct {
 	Recipe 		RecipeResponse 	`json:"recipe"`
 	Response 	string 			`json:"response"`
+}
+
+type ResponseCreateList struct {
+	List ListResponse
+}
+
+type GetListResponse struct {
+	List 		ListResponse 		`json:"list"`
+	Recipes 	[]RecipeResponse 	`json:"recipes"`
+}
+
+type UpdateListResponse struct {
+	List ListResponse `json:"list"`
 }
 
 func TestRunMainTests(t *testing.T) {
@@ -40,6 +60,10 @@ func TestRunMainTests(t *testing.T) {
 	GetRecipe(ts, t, loginRes, recipe)
 	CreateIncompleteRecipe(ts, t, loginRes)
 	UpdateUserPersonalDetails(ts, t, loginRes)
+	createListResponse := CreateListTest(ts, t, loginRes)
+	GetListAfterCreate(ts, t, loginRes, createListResponse)
+	updateListResponse := UpdateList(ts, t, loginRes, createListResponse)
+	GetListAfterUpdate(ts, t, loginRes, updateListResponse)
 }
 
 func CreateUser(db *gorm.DB, ts *httptest.Server, t *testing.T) LoginResponse {
@@ -189,8 +213,6 @@ func UpdateUserPersonalDetails(ts *httptest.Server, t *testing.T, loginRes Login
 	updateUserDetails := map[string]string{"Email": "updatedUser@gmail.com", "Username": "updatedUsername"}
 
 	jsonUpdateUserDetails, _ := json.Marshal(updateUserDetails)
-
-
 	userId, err := auth.ExtractTokenIDFromToken(loginRes.Token)
 
 	if err != nil {
@@ -214,4 +236,159 @@ func UpdateUserPersonalDetails(ts *httptest.Server, t *testing.T, loginRes Login
 	if completeResp.StatusCode != 200 {
         t.Fatalf("Expected status code 200, got %v", completeResp.StatusCode)
     }
+}
+
+
+/* Recipes test */
+func CreateListTest(ts *httptest.Server, t *testing.T, loginRes LoginResponse) ResponseCreateList {
+
+	createListInput := map[string]string{"Title": "my test list", "Description": "My test description"}
+
+	jsonCreateListInput, _ := json.Marshal(createListInput)
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/list", ts.URL), bytes.NewBuffer(jsonCreateListInput))
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", loginRes.Token))
+
+	completeResp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+        t.Fatalf("Expected no error, got %v", err.Error())
+    }
+
+	if completeResp.StatusCode != 200 {
+        t.Fatalf("Expected status code 200, got %v", completeResp.StatusCode)
+    }
+
+	var decoder = json.NewDecoder(completeResp.Body)
+
+	var listResponse ResponseCreateList
+	if err := decoder.Decode(&listResponse); err != nil {
+		t.Fatalf("Error decoding json")
+	}
+
+	return listResponse
+
+}
+
+func GetListAfterCreate(ts *httptest.Server, t *testing.T, loginRes LoginResponse, listResponse ResponseCreateList) {
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/list/%v", ts.URL, listResponse.List.ID), nil)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", loginRes.Token))
+
+	completeResp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+        t.Fatalf("Expected no error, got %v", err.Error())
+    }
+
+	if completeResp.StatusCode != 200 {
+        t.Fatalf("Expected status code 200, got %v", completeResp.StatusCode)
+    }
+
+	var decoder = json.NewDecoder(completeResp.Body)
+
+	var getListResponse GetListResponse
+	if err := decoder.Decode(&getListResponse); err != nil {
+		t.Fatalf("Error decoding json")
+	}
+
+	if getListResponse.List.ID != listResponse.List.ID {
+		t.Fatalf("Expected matching list ids")
+	}
+
+	if getListResponse.List.Title != listResponse.List.Title {
+		t.Fatalf("Expected matching list titles")
+	}
+
+	if getListResponse.List.Description != listResponse.List.Description {
+		t.Fatalf("Expected matching list descriptions")
+	}
+
+}
+
+func UpdateList(ts *httptest.Server, t *testing.T, loginRes LoginResponse, listResponse ResponseCreateList) UpdateListResponse {
+	
+	createListInput := map[string]string{"Title": "my test list adjusted", "Description": "My test description adjusted"}
+
+	jsonCreateListInput, _ := json.Marshal(createListInput)
+
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/list/%v", ts.URL, listResponse.List.ID), bytes.NewBuffer(jsonCreateListInput))
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", loginRes.Token))
+
+	completeResp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+        t.Fatalf("Expected no error, got %v", err.Error())
+    }
+
+	if completeResp.StatusCode != 200 {
+        t.Fatalf("Expected status code 200, got %v", completeResp.StatusCode)
+    }
+
+	var decoder = json.NewDecoder(completeResp.Body)
+
+	var updateListResponse UpdateListResponse
+	if err := decoder.Decode(&updateListResponse); err != nil {
+		t.Fatalf("Error decoding json")
+	}
+
+	return updateListResponse
+
+}
+
+
+func GetListAfterUpdate(ts *httptest.Server, t *testing.T, loginRes LoginResponse, listResponse UpdateListResponse) {
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/list/%v", ts.URL, listResponse.List.ID), nil)
+
+	if err != nil {
+		t.Fatalf("Expected no error, got %v", err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", loginRes.Token))
+
+	completeResp, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+        t.Fatalf("Expected no error, got %v", err.Error())
+    }
+
+	if completeResp.StatusCode != 200 {
+        t.Fatalf("Expected status code 200, got %v", completeResp.StatusCode)
+    }
+
+	var decoder = json.NewDecoder(completeResp.Body)
+
+	var getListResponse GetListResponse
+	if err := decoder.Decode(&getListResponse); err != nil {
+		t.Fatalf("Error decoding json")
+	}
+
+	if getListResponse.List.ID != listResponse.List.ID {
+		t.Fatalf("Expected matching list ids")
+	}
+
+	if getListResponse.List.Title != listResponse.List.Title {
+		t.Fatalf("Expected matching list titles")
+	}
+
+	if getListResponse.List.Description != listResponse.List.Description {
+		t.Fatalf("Expected matching list descriptions")
+	}
+
 }
