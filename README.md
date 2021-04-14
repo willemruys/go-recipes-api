@@ -53,6 +53,17 @@ Middleware: JWT validation
 - GET /recipes/:id/comments\
 Get all comments placed on a recipe
 
+### Likes 
+Users can like recipes. Each recipe stores a `Likes` attribute, which is an array of userIds of those who liked to recipe. This can be used on the front end to validate whether a user has liked the recipe already or not.
+
+Validation has been created in which a user can only like 1 time a recipe. 
+
+#### routes
+- PATCH /recipes/:id/like/add
+- PATCH /recipes/:id/like/remove
+
+
+
 ### Users
 #### routes
 - GET /user/:id
@@ -60,3 +71,29 @@ Get all comments placed on a recipe
 - POST /user
 - PATCH /user/personal-details/:id
 - PATCH /user/password/:id
+
+### Lists
+The users can create lists and add recipes to it.
+#### routes
+- POST /list
+- GET /list/:id
+- PATCH /list/:id
+- DELETE /list/:id
+- POST /list/:id/recipe/:recipeId
+- DELETE /list/:id/recipe/:recipeId
+
+### Comments 
+#### routes 
+- PATCH /comment/:id
+- DELETE /comment/:id
+
+Note that a comment is created by using the `PATCH /recipes/:id/comment` route
+
+### Login
+The login controllers returns a json web token. In various routes we use middleware to validate authorization actions based on the json web token.
+
+
+## E2E test
+At the moment, we have created E2E test that cover various user behaviours. Such as: creating a user, login, adding recipes, updating recipes, adding lists and updating lists.
+
+The E2E sets up a mock database and conducts transactions using this mock database. The database is a real psql instance.

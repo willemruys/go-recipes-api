@@ -38,7 +38,7 @@ type ResponseCreateRecipe struct {
 }
 
 type ResponseCreateList struct {
-	List ListResponse
+	List ListResponse `json:"list"`
 }
 
 type GetListResponse struct {
