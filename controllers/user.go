@@ -208,3 +208,32 @@ func GetUserRecipes(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"user": user.ID, "recipes": recipes})
 
 }
+
+func GetUserLists(c *gin.Context) {
+	
+	userId, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusNotAcceptable, gin.H{"response": err.Error()})
+		return
+	}
+	user, err := services.GetUser(userId)
+
+	if err != nil {
+		if err.Error() == "record not found" {
+			c.JSON(http.StatusNotFound, err.Error())
+			return
+		} else {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	recipes, err := user.UserLists()
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"response": err})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user.ID, "lists": recipes})
+}

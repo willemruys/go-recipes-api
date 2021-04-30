@@ -201,3 +201,14 @@ func (user *User) UserRecipes() ([]Recipe, error) {
 	return recipes, nil
 
 }
+
+func (user *User) UserLists() ([]List, error) {
+	db := LoadDB()
+	var lists []List
+
+	if err:= db.Debug().Model(&user).Association("List").Find(&lists); err != nil {
+		return nil, err
+	}
+
+	return lists, nil
+}

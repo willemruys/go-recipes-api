@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
@@ -43,6 +44,12 @@ func setupServer(db *gorm.DB) *gin.Engine {
 		c.Next()
  	})
 
+	localhostOrigin := "http://localhost:19002/"
+
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{localhostOrigin}
+	r.Use(cors.New(corsConfig))
+
 	/* recipes */
 	r.GET("/recipes", controllers.GetRecipes)
 	r.GET("/recipes/:id", controllers.GetRecipe)
@@ -59,9 +66,11 @@ func setupServer(db *gorm.DB) *gin.Engine {
 	/* user */
 	r.GET("/user/:id", controllers.GetUser)
 	r.GET("user/:id/recipes", controllers.GetUserRecipes)
+	r.GET("user/:id/lists", controllers.GetUserLists)
 	r.POST("/user", controllers.CreateUser)
 	r.PATCH("/user/personal-details", middleware.SetMiddlewareAuthentication(), controllers.UpdateUserPersonalDetails)
 	r.PATCH("/user/password", middleware.SetMiddlewareAuthentication(), controllers.UpdatePassword)
+	
 
 	/* list */
 	r.POST("/list", middleware.SetMiddlewareAuthentication(), controllers.CreateList)

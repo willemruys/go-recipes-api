@@ -25,14 +25,19 @@ func SetupModels() *gorm.DB {
 	var user string
 	var password string
 	var databaseName string 
-	var port string
+
+	socketDir := os.Getenv("DB_SOCKET_DIR")
+
+	if (len(socketDir) == 0) {
+		socketDir = "/cloudsql"
+	}
 
 	if os.Getenv("ENVIRONMENT") == "LOCAL" {
 		host = os.Getenv("POSTGRES_HOST_LOCAL")
 		user = os.Getenv("POSTGRES_USER_LOCAL")
 		password = os.Getenv("POSTGRES_PASSWORD_LOCAL")
 		databaseName =  os.Getenv("POSTGRES_DB_LOCAL")
-		port = os.Getenv("POSTGRES_PORT_LOCAL")
+		// port = os.Getenv("POSTGRES_PORT_LOCAL")
 	}
 
 	if os.Getenv("ENVIRONMENT") == "LOCAL_GCL" {
@@ -40,15 +45,15 @@ func SetupModels() *gorm.DB {
 		user = os.Getenv("POSTGRES_USER_LOCAL_GCL")
 		password = os.Getenv("POSTGRES_PASSWORD_LOCAL_GCL")
 		databaseName =  os.Getenv("POSTGRES_DB_LOCAL_GCL")
-		port = os.Getenv("POSTGRES_PORT_LOCAL_GCL")
+		// port = os.Getenv("POSTGRES_PORT_LOCAL_GCL")
 	}
 
 	if os.Getenv("ENVIRONMENT") == "DEV" {
-		host = os.Getenv("POSTGRES_HOST_DEV")
+		host = socketDir + "/" + os.Getenv("POSTGRES_HOST_DEV")
 		user = os.Getenv("POSTGRES_USER_DEV")
 		password = os.Getenv("POSTGRES_PASSWORD_DEV")
 		databaseName =  os.Getenv("POSTGRES_DB_DEV")
-		port = os.Getenv("POSTGRES_PORT_DEV")
+		// port = os.Getenv("POSTGRES_PORT_DEV")
 	}
 	
 	if os.Getenv("ENVIRONMENT") == "PROD" {
@@ -56,10 +61,10 @@ func SetupModels() *gorm.DB {
 		user = os.Getenv("POSTGRES_USER_PROD")
 		password = os.Getenv("POSTGRES_PASSWORD_PROD")
 		databaseName =  os.Getenv("POSTGRES_DB_PROD")
-		port = os.Getenv("POSTGRES_PORT_PROD")
+		// port = os.Getenv("POSTGRES_PORT_PROD")
 	}
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", host, user, password, databaseName, port)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Shanghai", host, user, password, databaseName)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
