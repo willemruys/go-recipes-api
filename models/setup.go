@@ -64,7 +64,7 @@ func SetupModels() *gorm.DB {
 		// port = os.Getenv("POSTGRES_PORT_PROD")
 	}
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Shanghai", host, user, password, databaseName)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=require TimeZone=Asia/Shanghai", host, user, password, databaseName)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
